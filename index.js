@@ -1,19 +1,19 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
 
-const corsOptions ={
-  origin:'*', 
-  credentials:true,
-  optionSuccessStatus:200,
-}
+const corsOptions = {
+  origin: "*",
+  credentials: true,
+  optionSuccessStatus: 200,
+};
 
-app.use(cors(corsOptions))
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // console.log(process.env.DB_PASSWORD);
@@ -74,7 +74,21 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/")
+    app.get("/alltoys/:category", async (req, res) => {
+      console.log(req.params.id);
+      if (
+        req.params.category == "sports" ||
+        req.params.category == "truck" ||
+        req.params.category == "police"
+      ) {
+        const result = await toysCollection
+          .find({ subCategory: req.params.category })
+          .toArray();
+        return res.send(result);
+      }
+      const result = await toysCollection.find().toArray();
+      res.send(result);
+    });
 
     app.put("/updatetoy/:id", async (req, res) => {
       const id = req.params.id;
@@ -91,7 +105,6 @@ async function run() {
       const result = await toysCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-
 
     //Find a document
     app.get("/toydetails/:id", async (req, res) => {
