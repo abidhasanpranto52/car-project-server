@@ -28,27 +28,56 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const toyscollection = client.db("toyProject").collection("toys");
+    const toysCollection = client.db("toyProject").collection("toys");
 
     app.post("/postToy", async (req, res) => {
       const body = req.body;
-      const result = await toyscollection.insertOne(body);
+      const result = await toysCollection.insertOne(body);
       res.send(result);
       console.log(body);
     });
 
     app.get("/alltoys", async (req, res) => {
-      const query ={};
-      const result = await toyscollection.find(query).toArray();
+      const query = {};
+      const result = await toysCollection.find(query).toArray();
       res.send(result);
     });
 
-
-    app.get('/mytoys/:email', async(req,res) =>{
-      console.log(req.params.email);
-      const result = await toyscollection.find({postedBy: req.params.email}).toArray();
+    app.get("/alltoys", async (req, res) => {
+      const sort = req.query.sort;
+      const search = req.query.search;
+      console.log(search);
+      // const query = {};
+      const query = { title: { $regex: search, $options: "i" } };
+      const options = {
+        // sort matched documents in descending order by rating
+        $sort: {
+          price: sort === "asc" ? 1 : -1,
+        },
+      };
+      const cursor = toysCollection.find(query, options);
+      const result = await cursor.toArray();
       res.send(result);
-    })
+    });
+
+    app.get("/mytoys/:email", async (req, res) => {
+      console.log(req.params.email);
+      const result = await toysCollection
+        .find({ postedBy: req.params.email })
+        .toArray();
+      res.send(result);
+    });
+
+    //Find a document
+    app.get("/toys/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = {
+        projection: { name: 1, price: 1, toy_id: 1, image: 1 },
+      };
+      const result = await toysCollection.findOne(query, options);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
