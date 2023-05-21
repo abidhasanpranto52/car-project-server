@@ -1,13 +1,19 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
 
-app.use(cors());
+const corsOptions ={
+  origin:'*', 
+  credentials:true,
+  optionSuccessStatus:200,
+}
+
+app.use(cors(corsOptions))
 app.use(express.json());
 
 // console.log(process.env.DB_PASSWORD);
@@ -68,12 +74,41 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/")
+
+    app.put("/updatetoy/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateToy = req.body;
+      console.log(updateToy);
+      const updateDoc = {
+        $set: {
+          price: updateToy.price,
+          quantity: updateToy.quantity,
+          description: updateToy.description,
+        },
+      };
+      const result = await toysCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+
     //Find a document
-    app.get("/toys/:id", async (req, res) => {
+    app.get("/toydetails/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = {
-        projection: { name: 1, price: 1, toy_id: 1, image: 1 },
+        projection: {
+          name: 1,
+          price: 1,
+          toy_id: 1,
+          image: 1,
+          seller: 1,
+          postedBy: 1,
+          rating: 1,
+          quantity: 1,
+          description: 1,
+        },
       };
       const result = await toysCollection.findOne(query, options);
       res.send(result);
