@@ -32,7 +32,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+     client.connect();
 
     const toysCollection = client.db("toyProject").collection("toys");
 
@@ -58,7 +58,7 @@ async function run() {
       const options = {
         // sort matched documents in descending order by rating
         $sort: {
-          price: sort === "asc" ? 1 : -1,
+          'price': sort === "asc" ? 1 : -1,
         },
       };
       const cursor = toysCollection.find(query, options);
